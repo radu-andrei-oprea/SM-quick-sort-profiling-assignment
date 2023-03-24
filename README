@@ -1,0 +1,60 @@
+OPREA Radu-Andrei - 341C2
+
+Quick sort este un algoritm bazat pe D&E, recursiv. La fiecare pas, se va alege un pivot dupa care se
+partitioneaza un array, astfel incat elementele mai mici decat pivotul sunt in stanga, iar cele mai 
+mari in dreapta
+
+Implementarea seriala a fost inspirata din pseudocodul oferit de acest 
+site: https://www.mygreatlearning.com/blog/quick-sort-algorithm/ 
+
+Cateva din functiile implementate: 
+* swap - swap intre doi Integeri
+* partition: ia ca parametru un array, pozitiile de inceput si sfarsit; se alege, modifica si 
+intoarce pivotul pentru a partitiona
+* quick_sort: realizeaza partitionarea (se va face qs recursiv pe arrayul injumatatit de pivot)
+
+Citirea se face din fisierul de input din director. Se va afisa arrayul nesortat, urmat de cel sortat.
+
+Parametrizari:
+
+MPI:  se fac initializarile generale, citirea si popularea array-uluise va face atunci
+cand rank == 0. Ideea paralelizarii prin MPI este aceea de fragmentare a vectorului, pentru a fi 
+paralelizat in bucati. Se face un Broadcast pentru a trimite nr de elemente. Scatter -> quick_sort ->
+Gather. Pentru nr impar de elemente, avem un remainder, care va fi paralelizat la final.
+
+OMP: in implementare se va aplica ommp section pe pasii recursivi din quick_sort
+
+POSIX: pentru a transmite parametrii in cadrul unui thread pthread, avem o structura "argument" ce 
+contine array-ul, inceputul si sfarsitul.
+
+Hybrid: am ales sa implementez hybridul OMP-MPI, denumit OMPI. Se aplica aceiasi pasi ca la 
+implementarile OMP si MPI
+
+
+Reguli utilizare Makefile:
+*build: compileaza toate fisierele
+*toate executabilele folosesc acelasi input
+*se va rula : "make run_varianta"
+	ex: make run_serial, make run_mpi, make run_hybrid etc
+
+!!!
+Precizari:
+*variantele MPI si MPI hybrid au fost rulate cu -np N (maximul de cores pe statie)
+	*pe statia mea, N = 6;	
+	*input-ul va avea maxim N-1 elemente; in cazul statiilor cu mai putine nuclee, trebuie scazut 
+numarul de elemente din input
+
+
+Probleme intampinate:
+*variantele MPI si MPI hybrid citesc de la tastatura, primind la stdin fisierul input. Nu face 
+sortarea corect daca ii dau sa citeasca din fisier.
+*variantele cu MPI dau timpi mai mari decat cel serial
+
+
+timpi: 
+-serial: real	0m0,003s
+-mpi: real	0m0,465s
+-omp: real	0m0,005s
+-posix: real	0m0,004s
+-hybrid(omp + mpi): real	0m0,477s
+
